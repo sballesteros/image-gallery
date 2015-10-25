@@ -1,0 +1,58 @@
+{
+  "name": "image-gallery",
+  "version": "0.0.0",
+  "description": "offline first, schema.org compliant image gallery",
+  "main": "index.js",
+  "scripts": {
+    "init": "npm run delete && npm run create && npm run push",
+    "create": "curl -XPUT $COUCH_PROTOCOL//$COUCH_ADMIN_USERNAME:$COUCH_ADMIN_PASSWORD@$COUCH_HOST:$COUCH_PORT/$COUCH_DB_NAME_IMAGE_GALLERY",
+    "delete": "curl -XDELETE $COUCH_PROTOCOL//$COUCH_ADMIN_USERNAME:$COUCH_ADMIN_PASSWORD@$COUCH_HOST:$COUCH_PORT/$COUCH_DB_NAME_IMAGE_GALLERY",
+    "push": "couchapp push ddoc.js $COUCH_PROTOCOL//$COUCH_ADMIN_USERNAME:$COUCH_ADMIN_PASSWORD@$COUCH_HOST:$COUCH_PORT/$COUCH_DB_NAME_IMAGE_GALLERY",
+    "start": "babel-node src/server.js",
+    "watch-server": "nodemon -w src/server.js --exec 'npm run start'",
+    "watch-js": "watchify src/app.js -o public/bundle.js -dv",
+    "watch-css": "nodemon -e css --watch src/components/ --watch public/css/ --exec 'npm run build-css'",
+    "build-js": "NODE_ENV=production browserify src/app.js > public/bundle.js",
+    "build-css": "cssnext --sourcemap public/css/manifest.css public/bundle.css",
+    "watch": "npm run watch-js & npm run watch-css & npm run watch-server",
+    "build": "npm run build-js && npm run build-css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sballesteros/image-gallery.git"
+  },
+  "keywords": [
+    "schema.org",
+    "image",
+    "gallery",
+    "photograph"
+  ],
+  "author": "Sebastien Ballesteros",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sballesteros/image-gallery/issues"
+  },
+  "homepage": "https://github.com/sballesteros/image-gallery#readme",
+  "devDependencies": {
+    "babel": "^5.8.29",
+    "babelify": "^6.4.0",
+    "browserify": "^11.2.0",
+    "couchapp": "^0.11.0",
+    "cssnext": "^1.8.4",
+    "envify": "^3.4.0",
+    "express": "^4.13.3",
+    "nodemon": "^1.8.0",
+    "watchify": "^3.4.0"
+  },
+  "dependencies": {
+    "pouchdb": "^5.0.0",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0"
+  },
+  "browserify": {
+    "transform": [
+      "babelify",
+      "envify"
+    ]
+  }
+}
