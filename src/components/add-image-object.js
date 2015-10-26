@@ -2,18 +2,17 @@ import React, { Component, PropTypes } from 'react';
 import blobUtil from 'blob-util';
 import uuid from 'uuid';
 
-export default class AddImage extends Component {
+export default class AddImageObject extends Component {
 
   handleChange(e) {
     // see http://stackoverflow.com/questions/10214947/upload-files-using-input-type-file-field-with-change-event-not-always-firin
     if (!e.target.value) return;
-    let { db } = this.props;
 
     resizeImage(e.target.files[0], {maxSize: 400}).then(data => {
       const id = uuid.v4();
       const indThumb = (data.length === 1) ? 0 : 1;
 
-      return db.put({
+      this.props.onImage({
         _id: id,
         '@id': id,
         '@type': 'ImageObject',
@@ -41,9 +40,10 @@ export default class AddImage extends Component {
           return _attachments;
         }, {})
       });
-    }).then(res => {
+
       e.target.value = '';
     }).catch(err => {
+      console.error(err);
       e.target.value = '';
     });
   }
@@ -99,3 +99,8 @@ function resizeImage(file, opts) {
     reader.readAsDataURL(file);
   });
 }
+
+
+AddImageObject.propTypes = {
+  onImage: PropTypes.func.isRequired
+};

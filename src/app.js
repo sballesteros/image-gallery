@@ -5,29 +5,40 @@ import ReactDOM from 'react-dom';
 import ImageGallery from './components/image-gallery';
 import PouchDB from 'pouchdb';
 import pouchdbUpsert from 'pouchdb-upsert';
+import history from './history';
 
 PouchDB.plugin(pouchdbUpsert);
+
 
 var db = window.db = new PouchDB('image-gallery', { auto_compaction: true });
 
 document.addEventListener('DOMContentLoaded', () => {
-  db.allDocs({include_docs: true, binary:true}).then(res => {
-    return res.rows.map(row => row.doc);
-  }).then(docs => {
-    return Promise.all(docs.map(doc => db.getAttachment(doc['@id'], doc.thumbnail.alternateName))).then(blobs => {
-      docs.forEach((doc, i) => {
-        doc.thumbnail.url = URL.createObjectURL(blobs[i]);
+
+  history.listen(location => {
+
+    let p;
+    if (location.query.root) {
+      p = db.get(location.query.root).catch(err => {
+        console.error(err);
+        return db.get('root').then(doc => db.get(doc.root));
       });
-      return docs;
+    } else {
+      p = db.get('root').then(doc => {
+        console.log('rrrrr', doc);
+        return db.get(doc.root)
+      });
+    }
+
+    p.catch(err => {
+      console.error(err);
+    }).then(root => {
+      console.log('root', root);
+      ReactDOM.render(
+        <ImageGallery db={db} root={root} history={history}/>,
+        document.getElementById('app')
+      );
     });
-  }).then(docs => {
 
-    ReactDOM.render(
-      <ImageGallery db={db} docs={docs}/>,
-      document.getElementById('app')
-    );
+  })(); // immediately unlisten;
 
-  }).catch(err => {
-    console.error(err);
-  });
 });

@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "blob-util": "^1.1.2",
+    "history": "^1.12.6",
     "pouchdb": "^5.0.0",
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
