@@ -4,6 +4,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ImageGallery from './components/image-gallery';
 import PouchDB from 'pouchdb';
+import pouchdbUpsert from 'pouchdb-upsert';
+
+PouchDB.plugin(pouchdbUpsert);
 
 var db = window.db = new PouchDB('image-gallery', { auto_compaction: true });
 

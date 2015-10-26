@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
-import AddImage from './add-image';
+import AddImageObject from './add-image-object';
+import ImageObject from './image-object';
 
 export default class ImageGallery extends Component {
   constructor(props) {
@@ -14,11 +15,28 @@ export default class ImageGallery extends Component {
       include_docs: true
     }).on('change', (change) => {
       let { doc } = change;
-      let blob = db.getAttachment(doc['@id'], doc.thumbnail.alternateName).then(blob => {
-        doc.thumbnail.url = URL.createObjectURL(blob);
-        this.setState({docs: this.state.docs.concat(doc)});
-      }).catch(err => {
-        console.error(err);
+      Promise.resolve().then(() => {
+        if (!doc.thumbnail.url) {
+          return db.getAttachment(doc['@id'], doc.thumbnail.alternateName).then(blob => {
+            doc.thumbnail.url = URL.createObjectURL(blob);
+            return doc;
+          });
+        } else {
+          return doc;
+        }
+      }).then(doc => {
+        for (var i = 0 ; i < this.state.docs.length; i++) {
+          if (this.state.docs[i]['@id'] === doc['@id']) {
+            break;
+          }
+        }
+        if (i === this.state.docs.length) {
+          this.setState({docs: this.state.docs.concat(doc)});
+        } else {
+          let docs = this.state.docs.slice();
+          docs[i] = doc;
+          this.setState({docs});
+        }
       });
     }).on('error', (err) => {
       console.error(err);
@@ -43,19 +61,18 @@ export default class ImageGallery extends Component {
 
   render() {
     return (
-      <div className='image-gallery' typeof="ImageGallery">
-        <h1>Image Gallery</h1>
+      <div className='image-gallery' vocab="http://schema.org/" typeof="ImageGallery">
+        <h1 property="name">Image Gallery</h1>
         <button onClick={this.handleDestroy.bind(this)}>destroy DB</button>
 
         <ul>
         {this.state.docs.map(doc => (
-          <li key={doc['@id']}>
-           <h2>{doc.alternateName}</h2>
-           <img src={doc.thumbnail.url}/>
+          <li key={doc['@id']} typeof="ImageObject">
+           <ImageObject db={this.props.db} doc={doc} />
           </li>
         ))}
         </ul>
-        <AddImage db={this.props.db}/>
+        <AddImageObject db={this.props.db}/>
       </div>
     );
   }
